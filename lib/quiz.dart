@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'resultado.dart';
+import 'dart:math';
 
 class Quiz extends StatefulWidget {
   @override
@@ -12,66 +13,9 @@ class _QuizState extends State<Quiz> {
   int acertos = 0;
   int erros = 0;
   int _currentBackgroundIndex = 0;
-
-  final List<Map<String, dynamic>> quiz = [
-    {
-      "pergunta": "Qual desses é um Mob hostil?",
-      "respostas": ["Ovelha", "Creeper", "Aldeão", "Gato"],
-      "alternativa correta": 1,
-    },
-    {
-      "pergunta": "Qual material você precisa para fazer um portal do Nether?",
-      "respostas": ["Diamante", "Ouro", "Obsidiana", "Ferro"],
-      "alternativa correta": 2,
-    },
-    {
-      "pergunta": "Qual item é necessário para domar um cavalo?",
-      "respostas": ["Maçã", "Feno", "Cenoura", "Sela"],
-      "alternativa correta": 3,
-    },
-    {
-      "pergunta": "Qual é o objetivo principal no modo sobrevivência de Minecraft?",
-      "respostas": ["Construir casas", "Explorar cavernas", "Sobreviver e derrotar o Ender Dragon", "Coletar recursos"],
-      "alternativa correta": 2,
-    },
-    {
-      "pergunta": "Qual desses mobs NÃO é amigável?",
-      "respostas": ["Lobo", "Esqueleto", "Cavalo", "Papagaio"],
-      "alternativa correta": 1,
-    },
-    {
-      "pergunta": "Qual é o bloco mais resistente em Minecraft?",
-      "respostas": ["Bedrock", "Obsidiana", "Diamante", "Netherite"],
-      "alternativa correta": 0,
-    },
-    {
-      "pergunta": "Qual planta pode ser usada para fazer pão?",
-      "respostas": ["Trigo", "Cana-de-açúcar", "Cenoura", "Batata"],
-      "alternativa correta": 0,
-    },
-    {
-      "pergunta": "Qual mob pode ser encontrado no Nether?",
-      "respostas": ["Vaca", "Creeper", "Ghast", "Aldeão"],
-      "alternativa correta": 2,
-    },
-    {
-      "pergunta": "Qual destes materiais não pode ser usado para fazer uma picareta?",
-      "respostas": ["Madeira", "Pedra", "Ouro", "Cobre"],
-      "alternativa correta": 3,
-    },
-    {
-      "pergunta": "Qual mob é conhecido por explodir?",
-      "respostas": ["Esqueleto", "Creeper", "Zumbi", "Enderman"],
-      "alternativa correta": 1,
-    }
-  ];
+  late List<Map<String, dynamic>> quiz;
 
   final List<String> _backgroundImages = [
-    'assets/images/FundoP1.png',
-    'assets/images/FundoP2.png',
-    'assets/images/FundoP3.png',
-    'assets/images/FundoP4.png',
-    'assets/images/FundoP5.png',
     'assets/images/FundoP6.png',
   ];
 
@@ -101,12 +45,26 @@ class _QuizState extends State<Quiz> {
     ],
   );
 
+  final TextStyle timerTextStyle = TextStyle(
+    fontSize: 16,
+    color: Colors.white,
+    fontFamily: 'FonteMine',
+  );
+
   Timer? _timer;
+  int _tempoRestante = 15;
 
   @override
   void initState() {
     super.initState();
     _startBackgroundTimer();
+    _startTimer();
+    _shuffleQuiz();
+  }
+
+  void _shuffleQuiz() {
+    quiz = List<Map<String, dynamic>>.from(_originalQuiz);
+    quiz.shuffle(Random(DateTime.now().millisecondsSinceEpoch));
   }
 
   void _startBackgroundTimer() {
@@ -114,6 +72,19 @@ class _QuizState extends State<Quiz> {
       setState(() {
         _currentBackgroundIndex = (_currentBackgroundIndex + 1) % _backgroundImages.length;
       });
+    });
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_tempoRestante > 0) {
+        setState(() {
+          _tempoRestante--;
+        });
+      } else {
+        timer.cancel();
+        respondeu(-1); // -1 para indicar que o tempo acabou
+      }
     });
   }
 
@@ -127,14 +98,15 @@ class _QuizState extends State<Quiz> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.green, // Cor da AppBar definida como verde
+        elevation: 0, // Remove a sombra da AppBar
         centerTitle: true,
         title: Text(
           'Pergunta ${perguntaNumero + 1} de ${quiz.length}',
           style: appBarTextStyle,
         ),
       ),
-     
-body: AnimatedSwitcher(
+      body: AnimatedSwitcher(
         duration: Duration(seconds: 1),
         child: Container(
           key: ValueKey<int>(_currentBackgroundIndex),
@@ -143,6 +115,7 @@ body: AnimatedSwitcher(
               image: AssetImage(_backgroundImages[_currentBackgroundIndex]),
               fit: BoxFit.cover,
             ),
+            color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.5), // Define a cor preta com opacidade
           ),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -150,6 +123,11 @@ body: AnimatedSwitcher(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  Image.asset(
+                    quiz[perguntaNumero]['imagem'],
+                    width: 200,
+                    height: 200,
+                  ),
                   Text(
                     quiz[perguntaNumero]['pergunta'],
                     style: quizTextStyle,
@@ -211,6 +189,10 @@ body: AnimatedSwitcher(
                         ),
                     ],
                   ),
+                  Text(
+                    'Tempo restante: $_tempoRestante segundos',
+                    style: timerTextStyle,
+                  ),
                 ],
               ),
             ),
@@ -222,7 +204,11 @@ body: AnimatedSwitcher(
 
   void respondeu(int respostaNumero) {
     setState(() {
-      if (quiz[perguntaNumero]['alternativa correta'] == respostaNumero) {
+      _timer?.cancel(); // Cancela o temporizador quando a pergunta é respondida
+      if (respostaNumero == -1) {
+        // Se o tempo acabou
+        erros++;
+      } else if (quiz[perguntaNumero]['alternativa correta'] == respostaNumero) {
         acertos++;
       } else {
         erros++;
@@ -240,7 +226,72 @@ body: AnimatedSwitcher(
         );
       } else {
         perguntaNumero++;
+        _tempoRestante = 15; // Reinicia o tempo para a próxima pergunta
+        _startTimer(); // Inicia o temporizador para a próxima pergunta
       }
     });
   }
+
+  final List<Map<String, dynamic>> _originalQuiz = [
+    {
+      "pergunta": "Qual desses eh um Mob hostil",
+      "respostas": ["Ovelha", "Piglin", "Aldeão", "Gato"],
+      "alternativa correta": 1,
+      "imagem": "assets/images/imagem1.png",
+    },
+    {
+      "pergunta": "Qual material voce precisa para fazer um portal do Nether",
+      "respostas": ["Diamante", "Ouro", "Obsidiana", "Ferro"],
+      "alternativa correta": 2,
+      "imagem": "assets/images/imagem2.png",
+    },
+    {
+      "pergunta": "Qual item eh necessario para domar um cavalo",
+      "respostas": ["Carne", "Feno", "Cenoura", "Sela"],
+      "alternativa correta": 3,
+      "imagem": "assets/images/imagem3.png",
+    },
+    {
+      "pergunta": "Qual eh o mob mais poderoso",
+      "respostas": ["Enderman", "Creeper", "Ender Dragon", "Phatom"],
+      "alternativa correta": 2,
+      "imagem": "assets/images/imagem4.png",
+    },
+    {
+      "pergunta": "Qual desses mobs nao eh amigavel",
+      "respostas": ["Lobo", "Esqueleto", "Cavalo", "Papagaio"],
+      "alternativa correta": 1,
+      "imagem": "assets/images/imagem5.png",
+    },
+    {
+      "pergunta": "Qual eh o bloco mais resistente em Minecraft",
+      "respostas": ["Bedrock", "Obsidiana", "Diamante", "Netherite"],
+      "alternativa correta": 0,
+      "imagem": "assets/images/imagem6.png",
+    },
+    {
+      "pergunta": "Qual planta pode ser usada para fazer pao",
+      "respostas": ["Trigo", "Cogumelo", "Cenoura", "Batata"],
+      "alternativa correta": 0,
+      "imagem": "assets/images/imagem7.png",
+    },
+    {
+      "pergunta": "Qual mob pode ser encontrado no Nether",
+      "respostas": ["Vaca", "Creeper", "Ghast", "Aldeao"],
+      "alternativa correta": 2,
+      "imagem": "assets/images/imagem8.png",
+    },
+    {
+      "pergunta": "Qual destes materiais nao pode ser usado para fazer uma picareta",
+      "respostas": ["Madeira", "Pedra", "Ouro", "Cobre"],
+      "alternativa correta": 3,
+      "imagem": "assets/images/imagem9.png",
+    },
+    {
+      "pergunta": "Qual mob eh conhecido por explodir",
+      "respostas": ["Esqueleto", "Creeper", "Zumbi", "Enderman"],
+      "alternativa correta": 1,
+      "imagem": "assets/images/imagem10.png",
+    }
+  ];
 }

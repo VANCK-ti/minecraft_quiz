@@ -8,15 +8,32 @@ class Resultado extends StatelessWidget {
   Resultado({required this.acertos, required this.totalPerguntas});
 
   final List<String> _backgroundImages = [
-    'assets/images/obsidian.png',
+    'assets/images/FundoP4.png',
   ];
+
+  final TextStyle resultadoTextStyle = TextStyle(
+    fontSize: 30,
+    fontWeight: FontWeight.bold,
+    color: Colors.white, // Alterado para branco
+    fontFamily: 'FonteMine', // Define a mesma fonte utilizada na tela de quiz
+  );
+
+  final TextStyle pontuacaoTextStyle = TextStyle(
+    fontSize: 16, // Alterado o tamanho do texto para caber no botão
+    color: Colors.white, // Alterado para branco
+    fontFamily: 'FonteMine', // Define a mesma fonte utilizada na tela de quiz
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Minecraft Quiz'),
+        title: Text(
+          'Minecraft Quiz', // Alterado para FonteMine
+          style: TextStyle(fontFamily: 'FonteMine'), // Aplica a fonte FonteMine
+        ),
         centerTitle: true,
+        backgroundColor: Colors.green, // Alterado para verde
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -35,11 +52,11 @@ class Resultado extends StatelessWidget {
               children: [
                 Text(
                   'Resultado',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: resultadoTextStyle, // Aplica o estilo definido
                 ),
                 Text(
-                  'Você acertou $acertos de $totalPerguntas perguntas!',
-                  style: TextStyle(fontSize: 20, color: Colors.white),
+                  'Voce acertou $acertos de $totalPerguntas perguntas!',
+                  style: pontuacaoTextStyle, // Aplica o estilo definido
                   textAlign: TextAlign.center,
                 ),
                 GestureDetector(
@@ -60,7 +77,7 @@ class Resultado extends StatelessWidget {
                       ),
                       Text(
                         'Jogar Novamente',
-                        style: TextStyle(fontSize: 20, color: Colors.white),
+                        style: pontuacaoTextStyle, // Aplica o estilo definido
                       ),
                     ],
                   ),

@@ -76,6 +76,17 @@ flutter:
     - assets/images/FundoP5.png
     - assets/images/FundoP6.png
 
+    - assets/images/imagem1.png
+    - assets/images/imagem2.png
+    - assets/images/imagem3.png
+    - assets/images/imagem4.png
+    - assets/images/imagem5.png
+    - assets/images/imagem6.png
+    - assets/images/imagem7.png
+    - assets/images/imagem8.png
+    - assets/images/imagem9.png
+    - assets/images/imagem10.png
+    
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
@@ -93,6 +104,10 @@ flutter:
         - asset: fonts/FonteMine.ttf
         - asset: fonts/FonteMine.ttf
       
+    - family: FonteDesignMine
+      fonts:
+        - asset: fonts/FonteDesignMine.ttf
+        - asset: fonts/FonteDesignMine.ttf
     - family: FonteDesignMine
       fonts:
         - asset: fonts/FonteDesignMine.ttf
